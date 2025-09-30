@@ -1,0 +1,218 @@
+@startuml TechCirculo_ER_Diagram
+
+!define TABLE(name,desc) class name as "desc" << (T,#FFAAAA) >>
+!define PK(x) <b><color:#b8861b><&key></color> x</b>
+!define FK(x) <color:#aaaaaa><&key></color> x
+!define UNIQUE(x) <color:#00AA00><&key></color> x
+
+' --- Styling ---
+skinparam class {
+    BackgroundColor #F5F5F5
+    BorderColor #333333
+    ArrowColor #333333
+}
+hide methods
+hide stereotypes
+skinparam classFontSize 12
+
+' --- User Management ---
+TABLE(User, "users") {
+    PK(id: UUID)
+    UNIQUE(email: String)
+    password: String
+    username: String
+    role: UserRole (ENUM)
+}
+
+TABLE(Profile, "profiles") {
+    PK(user_id: UUID)
+    FK(user_id: UUID)
+    name: String
+    university: String
+    profile_pic_url: String
+    linkedin_url: String
+    github_url: String
+    leetcode_url: String
+    email: String
+    major: String
+    location: String
+    bio: String(1000)
+}
+
+' --- Community ---
+TABLE(Community, "communities") {
+    PK(id: UUID)
+    name: String
+    description: String
+    image_url: String
+    member_count: Long
+}
+
+TABLE(UserCommunity, "user_communities") {
+    PK(user_id: UUID)
+    PK(community_id: UUID)
+    role: String
+    joined_at: LocalDateTime
+}
+
+' --- Posts & Comments ---
+TABLE(Post, "posts") {
+    PK(id: UUID)
+    FK(community_id: UUID)
+    FK(author_id: UUID)
+    title: String
+    content: TEXT
+    image_url: String
+    likes_count: Integer
+    created_at: LocalDateTime
+    updated_at: LocalDateTime
+    tags: String
+    is_pinned: Boolean
+    is_hidden: Boolean
+    hidden_by: UUID
+    hidden_at: LocalDateTime
+}
+
+TABLE(Comment, "comments") {
+    PK(id: UUID)
+    FK(post_id: UUID)
+    FK(user_id: UUID)
+    content: TEXT
+    parent_comment_id: UUID
+    likes_count: Integer
+    created_at: LocalDateTime
+    updated_at: LocalDateTime
+}
+
+TABLE(PostLike, "post_likes") {
+    PK(id: UUID)
+    post_id: UUID
+    user_id: UUID
+    created_at: LocalDateTime
+}
+
+TABLE(PostBookmark, "post_bookmarks") {
+    PK(id: UUID)
+    post_id: UUID
+    user_id: UUID
+    created_at: LocalDateTime
+}
+
+TABLE(PostView, "post_views") {
+    PK(id: UUID)
+    post_id: UUID
+    user_id: UUID
+    ip_address: String
+    viewed_date: LocalDateTime
+}
+
+TABLE(PostReport, "post_reports") {
+    PK(id: UUID)
+    post_id: UUID
+    user_id: UUID
+    reason: String
+    status: String
+    admin_notes: String
+    reviewed_by: UUID
+    created_at: LocalDateTime
+    reviewed_at: LocalDateTime
+}
+
+' --- Gamification ---
+TABLE(UserPoints, "user_points") {
+    PK(id: Long)
+    FK(profile_id: UUID)
+    total_points: Integer
+    current_level: Integer
+    current_streak: Integer
+    weekly_points: Integer
+    monthly_points: Integer
+    last_activity: LocalDateTime
+    streak_updated_date: LocalDateTime
+    created_at: LocalDateTime
+    updated_at: LocalDateTime
+}
+
+TABLE(Badge, "badges") {
+    PK(id: Long)
+    UNIQUE(badge_key: String)
+    name: String
+    description: String
+    icon: String
+    category: String
+    points_reward: Integer
+    condition_type: String
+    condition_value: Integer
+    is_active: Boolean
+    created_at: LocalDateTime
+}
+
+TABLE(UserBadge, "user_badges") {
+    PK(id: Long)
+    FK(user_points_id: Long)
+    FK(badge_id: Long)
+    earned_at: LocalDateTime
+    notified: Boolean
+}
+
+TABLE(PointsTransaction, "points_transactions") {
+    PK(id: Long)
+    FK(user_points_id: Long)
+    activity_type: String
+    activity_category: String
+    points_awarded: Integer
+    multiplier: Double
+    description: String
+    metadata: TEXT
+    reference_id: Long
+    reference_type: String
+    created_at: LocalDateTime
+}
+
+' --- Announcements ---
+TABLE(Announcement, "announcements") {
+    PK(id: UUID)
+    FK(community_id: UUID)
+    title: String
+    content: String
+    type: String
+    created_at: LocalDateTime
+}
+
+TABLE(UserAnnouncement, "user_announcements") {
+    PK(user_id: UUID)
+    PK(announcement_id: UUID)
+    is_read: Boolean
+    is_bookmarked: Boolean
+}
+
+' --- Relationships ---
+User ||--|| Profile : "has"
+User ||--o{ UserCommunity : "joins"
+Community ||--o{ UserCommunity : "includes"
+User ||--o{ Post : "creates"
+Community ||--o{ Post : "contains"
+Post ||--o{ Comment : "has"
+User ||--o{ Comment : "writes"
+Post ||--o{ PostLike : "receives"
+User ||--o{ PostLike : "likes"
+Post ||--o{ PostBookmark : "saved by"
+User ||--o{ PostBookmark : "bookmarks"
+Post ||--o{ PostView : "viewed by"
+User ||--o{ PostView : "views"
+Post ||--o{ PostReport : "reported"
+User ||--o{ PostReport : "submits"
+
+Profile ||--|| UserPoints : "has"
+UserPoints ||--o{ PointsTransaction : "logs"
+UserPoints ||--o{ UserBadge : "earns"
+Badge ||--o{ UserBadge : "awarded"
+
+Community ||--o{ Announcement : "publishes"
+User ||--o{ UserAnnouncement : "receives"
+Announcement ||--o{ UserAnnouncement : "sent to"
+
+' Self-reference
+Comment ||--o{ Comment : "replies to"
+
+@enduml

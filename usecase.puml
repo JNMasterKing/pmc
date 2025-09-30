@@ -1,0 +1,60 @@
+@startuml TechCirculo_UseCase_Diagram
+
+' --- constrain width so layout wraps vertically ---
+scale max 640 width
+
+' --- compact styling ---
+skinparam dpi 120
+skinparam defaultFontSize 12
+skinparam usecasePadding 8
+skinparam packagePadding 10
+
+' --- vertical flow ---
+top to bottom direction
+
+' --- reduced set of actors (keeps diagram narrow) ---
+actor "Guest" as Guest
+actor "Registered\nUser" as RegUser
+actor "Admin" as Admin
+
+' --- invisible links help align actors vertically ---
+Guest -[hidden]-> RegUser
+RegUser -[hidden]-> Admin
+
+' --- system with grouped packages (keeps ovals fewer & taller, not wide) ---
+rectangle "TechCirculo 2.0 System" {
+  package "Authentication" {
+    usecase "Register / Login / Logout" as UC_Auth
+  }
+  package "Profile & Social" {
+    usecase "Create / Edit / View Profile" as UC_Profile
+    usecase "Search / View Users" as UC_ViewUsers
+  }
+  package "Community & Content" {
+    usecase "Browse / Join Communities" as UC_Community
+    usecase "Create / Interact with Posts" as UC_Posts
+  }
+  package "Gamification" {
+    usecase "Earn Points & Badges" as UC_Gamify
+    usecase "View Leaderboard" as UC_Leaderboard
+  }
+  package "Administration" {
+    usecase "Moderate / Manage" as UC_Admin
+  }
+}
+
+' --- associations (kept short) ---
+Guest --> UC_Auth
+Guest --> UC_ViewUsers
+
+RegUser --> UC_Auth
+RegUser --> UC_Profile
+RegUser --> UC_Community
+RegUser --> UC_Posts
+RegUser --> UC_Gamify
+
+Admin --> UC_Admin
+Admin --> UC_Auth
+Admin --> UC_Posts
+
+@enduml

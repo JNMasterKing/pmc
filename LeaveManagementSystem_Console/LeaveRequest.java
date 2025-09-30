@@ -1,3 +1,5 @@
+import java.time.LocalDate;
+
 public class LeaveRequest {
     private static int counter = 1;
     private int id;
@@ -16,6 +18,10 @@ public class LeaveRequest {
         this.type = type;
         this.reason = reason;
         this.status = "Pending";
+    }
+
+    public LeaveRequest(int i, int employeeId, LocalDate start, LocalDate end, String type2, String reason2) {
+        //TODO Auto-generated constructor stub
     }
 
     public int getId() { 
